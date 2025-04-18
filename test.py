@@ -105,7 +105,7 @@ if final_submit:
 
     st.subheader("🎯 Style Breakdown")
     with st.spinner("Creating your wardrobe..."):
-        chat_response = openai.ChatCompletion.create(
+        response = openai.ChatCompletion.create(
             model="gpt-4",
             messages=[
                 {"role": "system", "content": "You are a helpful fashion stylist."},
@@ -115,7 +115,7 @@ if final_submit:
             max_tokens=1000
         )
 
-        content = chat_response['choices'][0]['message']['content']
+        content = response['choices'][0]['message']['content']
         st.markdown(content)
 
         image_prompt_match = re.search(r'(?i)image generation prompt.*?:\s*(.+)', content)
@@ -127,12 +127,12 @@ if final_submit:
 
     st.subheader("🖼️ Vision Board Preview")
     with st.spinner("Generating your visual..."):
-        image_response = openai.Image.create(
+        image_response = openai.images.generate(
             model="dall-e-3",
             prompt=image_prompt,
             n=1,
             size="1024x1024"
         )
-        image_url = image_response['data'][0]['url']
+        image_url = image_response.data[0].url
         st.image(image_url, caption="Your Style Vision Board", use_column_width=True)
         st.markdown(f"[🔗 View Full Image]({image_url})")
