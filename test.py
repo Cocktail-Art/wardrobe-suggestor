@@ -31,8 +31,8 @@ with st.form("section1"):
 st.header("Section 2: Dressing Challenges & Style Fit")
 with st.form("section2"):
     frustrations = st.multiselect("What frustrates you most when dressing up?", [
-        "Nothing fits me right", "I don’t know what matches", "My clothes are outdated",
-        "I never have the right outfit", "Shopping is overwhelming", "I want to look better, just don’t know how"
+        "Nothing fits me right", "I don't know what matches", "My clothes are outdated",
+        "I never have the right outfit", "Shopping is overwhelming", "I want to look better, just don't know how"
     ])
     fit_pref = st.multiselect("What kind of fit makes you feel most confident?", [
         "Slim & tailored", "Relaxed & comfy", "Structured but not tight", "I wear whatever I find"
@@ -61,12 +61,12 @@ with st.form("section3"):
 # Section 4: Mindset
 st.header("Section 4: Self Image & Mindset")
 with st.form("section4"):
-    wardrobe_goal = st.selectbox("What’s your ideal wardrobe goal in the next 3 months?", [
+    wardrobe_goal = st.selectbox("What's your ideal wardrobe goal in the next 3 months?", [
         "Look more polished for work", "Rebuild with fewer, better pieces", "Be comfy but presentable",
         "Try a bold new look", "Just reduce confusion"
     ])
-    wardrobe_vibe = st.selectbox("What’s the overall vibe of your wardrobe right now?", [
-        "Clean & functional", "Cool & laid-back", "Sharp & versatile", "Random & messy", "Doesn’t reflect who I am"
+    wardrobe_vibe = st.selectbox("What's the overall vibe of your wardrobe right now?", [
+        "Clean & functional", "Cool & laid-back", "Sharp & versatile", "Random & messy", "Doesn't reflect who I am"
     ])
     style_conf = st.slider("Style confidence level today", 1, 5, 3)
     final_submit = st.form_submit_button("✨ Generate My Style Vision Board")
@@ -106,7 +106,7 @@ if final_submit:
     st.subheader("🎯 Style Breakdown")
     with st.spinner("Creating your wardrobe..."):
         response = openai.ChatCompletion.create(
-            model="gpt-4",
+            model="gpt-3.5-turbo",
             messages=[
                 {"role": "system", "content": "You are a helpful fashion stylist."},
                 {"role": "user", "content": full_prompt}
@@ -127,12 +127,11 @@ if final_submit:
 
     st.subheader("🖼️ Vision Board Preview")
     with st.spinner("Generating your visual..."):
-        image_response = openai.images.generate(
-            model="dall-e-3",
+        image_response = openai.Image.create(
             prompt=image_prompt,
             n=1,
             size="1024x1024"
         )
-        image_url = image_response.data[0].url
+        image_url = image_response['data'][0]['url']
         st.image(image_url, caption="Your Style Vision Board", use_column_width=True)
         st.markdown(f"[🔗 View Full Image]({image_url})")
