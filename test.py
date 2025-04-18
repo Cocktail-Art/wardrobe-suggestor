@@ -100,7 +100,7 @@ if submitted:
                 dalle_prompt = dalle_match.group(1).strip()
             else:
                 if gender == "Male":
-                    dalle_prompt = f"Professional flat lay of 12 {gender.lower()} fashion items: shirts, trousers, jackets, shoes. {color_description} colors. Clean white background, items neatly arranged with labels, no humans, masculine style."
+                    dalle_prompt = f"Professional flat lay of 12 {gender.lower()} fashion items: shirts, trousers, jackets, shoes. {color_description} colors. Clean white background, items neatly arranged with labels, no humans. ALL FOR MEN."
                 else:
                     dalle_prompt = f"Professional flat lay of 12 {gender.lower()} fashion items: blouses, skirts, dresses, shoes. {color_description} colors. Clean white background, items neatly arranged with labels, no humans, feminine style."
 
