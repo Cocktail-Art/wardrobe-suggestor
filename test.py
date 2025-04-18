@@ -16,7 +16,13 @@ st.markdown("### Answer these quick questions to unlock your personalized style 
 with st.form("style_dna"):
     # Personal Information
     st.markdown("**Basic Information**")
-    name = st.text_input("Full Name*", placeholder="Required")
+    col1, col2 = st.columns(2)
+    with col1:
+        name = st.text_input("Full Name*", placeholder="Required")
+    with col2:
+        gender = st.selectbox("Gender*", ["Male", "Female", "Non-Binary", "Prefer not to say"], 
+                            index=3, help="For personalized styling recommendations")
+    
     email = st.text_input("Email ID*")
     phone = st.text_input("Whatsapp Number*")
     birthdate = st.date_input("Birthdate (Optional)", value=None)
@@ -73,7 +79,7 @@ with st.form("style_dna"):
     icons = st.multiselect(
         "4. Which style icon inspires you most? (Pick 1-2)",
         options=[
-            "Shah Rukh in Pathaan (Rugged cool)",
+            "Shah Rukh (Rugged cool)",
             "Steve Jobs (Minimal)",
             "Virat Kohli (Sharp sporty)",
             "Pankaj Tripathi (Earthy calm)",
@@ -139,6 +145,11 @@ with st.form("style_dna"):
     submitted = st.form_submit_button("🚀 Generate My Style DNA Report")
 
 if submitted:
+    # Validate required fields
+    if not name or not gender or not email or not phone or not weight or not height or not shirt_size or not pant_size:
+        st.error("Please fill all required fields marked with *")
+        st.stop()
+
     # Handle color groups safely
     color_description = "No color preference" if not color_groups else ", ".join(color_groups)
     if len(color_groups) == 1:
@@ -147,8 +158,9 @@ if submitted:
     # Build analysis prompt
     analysis_prompt = f"""Analyze this style profile:
     Name: {name}
+    Gender: {gender}
     Body: {weight}kg, {height}, {shirt_size} top, {pant_size} bottom
-    Frustrations: {', '.join(frustrations)}
+    Frustrations: {', '.join(frustrations) if frustrations else 'None specified'}
     Fit Preference: {fit_pref}
     Colors: {color_description}
     Style Icons: {', '.join(icons) if icons else 'None'}
@@ -159,11 +171,11 @@ if submitted:
     Confidence: {style_conf}/5
 
     Create:
-    1. Style persona name
+    1. Gender-appropriate style persona name
     2. 3 key style strengths
     3. 3 improvement areas
     4. 8-item capsule wardrobe (specific colors/materials)
-    5. DALL-E 3 prompt for flat lay image (no humans, labeled items)
+    5. DALL-E 3 prompt for flat lay image (12 items, no humans, labeled items, white background)
     """
 
     # Generate analysis
@@ -186,7 +198,7 @@ if submitted:
             if dalle_match:
                 dalle_prompt = dalle_match.group(1).strip()
             else:
-                dalle_prompt = f"Professional flat lay photography of 8 fashion items in {color_description} colors. Minimalist white background, items neatly arranged with labels, no humans, high detail."
+                dalle_prompt = f"Professional flat lay photography of 12 fashion items (3x4 grid) in {color_description} colors. Minimalist white background, items neatly arranged with small labels, no humans, high detail, commercial product photography style."
 
             # Generate wardrobe image
             image_response = client.images.generate(
@@ -203,6 +215,7 @@ if submitted:
             col1, col2 = st.columns([2, 3])
             with col1:
                 st.markdown("## 📝 Style Breakdown")
+                # Display analysis without the DALL-E prompt part
                 st.markdown(analysis.split("DALL-E 3 prompt:")[0])
             
             with col2:
