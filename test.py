@@ -24,6 +24,7 @@ with st.form("style_dna"):
     
     email = st.text_input("Email ID*")
     phone = st.text_input("Whatsapp Number*")
+    birthdate = st.date_input("Birthdate (Optional)", value=None)
     
     # Body Basics
     st.markdown("---")
@@ -41,7 +42,103 @@ with st.form("style_dna"):
     st.markdown("---")
     st.markdown("**Style Preferences**")
     
-    # [All your style questions remain exactly the same...]
+    # Question 1
+    frustrations = st.multiselect(
+        "1. What frustrates you most when dressing up? (Pick 2)",
+        options=[
+            "Nothing fits me right", "I don't know what matches",
+            "My clothes are outdated", "I never have the right outfit",
+            "Shopping is overwhelming", "I want to look better, just don't know how"
+        ],
+        max_selections=2
+    )
+
+    # Question 2
+    fit_pref = st.radio(
+        "2. What kind of fit makes you feel most confident?",
+        options=[
+            "Slim & tailored", "Relaxed & comfy",
+            "Structured but not tight", "I wear whatever I find"
+        ],
+        horizontal=True
+    )
+
+    # Question 3
+    color_groups = st.multiselect(
+        "3. Preferred color groups? (Pick 2)",
+        options=[
+            "Black, Grey, Navy", "White, Beige, Brown",
+            "Olive, Teal, Rust", "Brights like mustard/red",
+            "I avoid color — unsure what suits me"
+        ],
+        max_selections=2
+    )
+
+    # Question 4
+    icons = st.multiselect(
+        "4. Which style icon inspires you most? (Pick 1-2)",
+        options=[
+            "Shah Rukh (Rugged cool)",
+            "Steve Jobs (Minimal)",
+            "Virat Kohli (Sharp sporty)",
+            "Pankaj Tripathi (Earthy calm)",
+            "Ranveer Singh (Bold expressive)"
+        ],
+        max_selections=2
+    )
+
+    # Question 5
+    weekend_outfit = st.radio(
+        "5. Weekend outfit of choice?",
+        options=[
+            "Tee + joggers", "Shirt + jeans",
+            "Kurta + pants", "Blazer + tee",
+            "Loose tee + slides"
+        ],
+        horizontal=True
+    )
+
+    # Question 6
+    accessories = st.radio(
+        "6. How do you feel about accessories?",
+        options=[
+            "Love them — they finish a look",
+            "Stick to basics",
+            "Avoid them — too much hassle",
+            "Curious, open to learn"
+        ],
+        horizontal=True
+    )
+
+    # Question 7
+    wardrobe_goal = st.radio(
+        "7. 3-month wardrobe goal?",
+        options=[
+            "Look more polished for work",
+            "Rebuild with fewer, better pieces",
+            "Be comfy but presentable",
+            "Try a bold new look",
+            "Just reduce confusion"
+        ],
+        horizontal=True
+    )
+
+    # Question 8
+    wardrobe_vibe = st.radio(
+        "8. Current wardrobe vibe?",
+        options=[
+            "Clean & functional", "Cool & laid-back",
+            "Sharp & versatile", "Random & messy",
+            "Doesn't reflect who I am"
+        ],
+        horizontal=True
+    )
+
+    # Question 9
+    style_conf = st.slider(
+        "9. Style confidence level today? (1 = Not confident, 5 = I own it)",
+        1, 5, 3
+    )
 
     # Submit button
     submitted = st.form_submit_button("🚀 Generate My Style DNA Report")
@@ -52,64 +149,64 @@ if submitted:
         st.error("Please fill all required fields marked with *")
         st.stop()
 
-    # Build analysis prompt with strict formatting requirements
-    analysis_prompt = f"""Create a detailed {gender.lower()} capsule wardrobe based on these preferences:
+    # Build comprehensive analysis prompt
+    analysis_prompt = f"""Create a personalized {gender.lower()} wardrobe considering ALL these factors:
     
+    ### User Profile ###
+    Name: {name}
     Gender: {gender}
     Body: {weight}kg, {height}, {shirt_size} top, {pant_size} bottom
-    Colors: {', '.join(color_groups) if color_groups else 'No preference'}
+    
+    ### Style Challenges ###
+    Frustrations: {', '.join(frustrations) if frustrations else 'None'}
+    
+    ### Preferences ###
     Fit: {fit_pref}
-    Style Icons: {', '.join(icons) if icons else 'None'}
+    Colors: {', '.join(color_groups) if color_groups else 'Open to all colors'}
+    Style Icons: {', '.join(icons) if icons else 'No specific icons'}
+    Weekend Style: {weekend_outfit}
+    Accessories: {accessories}
     
-    Provide the following EXACTLY in this format:
+    ### Wardrobe Context ###
+    Current Vibe: {wardrobe_vibe}
+    3-Month Goal: {wardrobe_goal}
+    Confidence Level: {style_conf}/5
     
-    ### Wardrobe Items ###
-    1. [Item 1 with color/details]
-    2. [Item 2 with color/details]
-    3. [Item 3 with color/details]
-    4. [Item 4 with color/details]
-    5. [Item 5 with color/details]
-    6. [Item 6 with color/details]
-    7. [Item 7 with color/details]
-    8. [Item 8 with color/details]
+    ### Required Output ###
+    1. 8 specific clothing items (include colors, materials, and how they address the user's preferences)
+    2. 3 footwear options (match the style and colors)
+    3. 3 accessory suggestions (consider the user's accessory preference)
+    4. Style summary connecting all choices to the user's inputs
+    5. EXACT DALL-E prompt to visualize these items together (12 items total, no humans)
     
-    ### Footwear ###
-    - [Shoe 1 with details]
-    - [Shoe 2 with details]
-    
-    ### Accessories ###
-    - [Accessory 1]
-    - [Accessory 2]
-    
-    ### Style Summary ###
-    [3-4 sentence summary of the style]
-    
-    ### Image Prompt ###
-    [Detailed DALL-E prompt describing EXACTLY how to visualize these items together]
+    Format response with these exact section headers:
+    ### Wardrobe Recommendations ###
+    ### Footwear Options ### 
+    ### Accessory Suggestions ###
+    ### Style Explanation ###
+    ### Image Generation Prompt ###
     """
 
     with st.spinner("🔍 Creating your perfect wardrobe..."):
         try:
-            # Get wardrobe recommendations
+            # Get comprehensive wardrobe recommendations
             response = client.chat.completions.create(
                 model="gpt-4",
                 messages=[
-                    {"role": "system", "content": f"You are a {gender.lower()} fashion stylist creating detailed wardrobe plans."},
+                    {"role": "system", "content": f"You are a {gender.lower()} fashion expert creating fully personalized wardrobes."},
                     {"role": "user", "content": analysis_prompt}
                 ],
                 temperature=0.7,
-                max_tokens=1500
+                max_tokens=1800
             )
             analysis = response.choices[0].message.content
             
-            # Extract the image prompt
-            image_prompt = analysis.split("### Image Prompt ###")[1].strip()
-            
-            # Extract the wardrobe items for display
-            wardrobe_items = analysis.split("### Wardrobe Items ###")[1].split("### Footwear ###")[0].strip()
-            footwear = analysis.split("### Footwear ###")[1].split("### Accessories ###")[0].strip()
-            accessories = analysis.split("### Accessories ###")[1].split("### Style Summary ###")[0].strip()
-            style_summary = analysis.split("### Style Summary ###")[1].split("### Image Prompt ###")[0].strip()
+            # Parse the response
+            wardrobe = analysis.split("### Wardrobe Recommendations ###")[1].split("### Footwear Options ###")[0].strip()
+            footwear = analysis.split("### Footwear Options ###")[1].split("### Accessory Suggestions ###")[0].strip()
+            accessories = analysis.split("### Accessory Suggestions ###")[1].split("### Style Explanation ###")[0].strip()
+            explanation = analysis.split("### Style Explanation ###")[1].split("### Image Generation Prompt ###")[0].strip()
+            image_prompt = analysis.split("### Image Generation Prompt ###")[1].strip()
 
             # Generate the wardrobe image
             image_response = client.images.generate(
@@ -121,26 +218,26 @@ if submitted:
             )
 
             # Display results
-            st.success(f"🎉 {name}'s Personalized {gender} Wardrobe")
+            st.success(f"🎉 {name}'s Complete Style Profile")
             
             col1, col2 = st.columns([1, 1])
             with col1:
-                st.markdown("## 👕 Wardrobe Items")
-                st.markdown(wardrobe_items)
+                st.markdown("## 👕 Wardrobe Recommendations")
+                st.markdown(wardrobe)
                 
-                st.markdown("## 👟 Footwear")
+                st.markdown("## 👟 Footwear Options")
                 st.markdown(footwear)
                 
-                st.markdown("## 💍 Accessories")
+                st.markdown("## 💍 Accessory Suggestions")
                 st.markdown(accessories)
                 
-                st.markdown("## 💡 Style Summary")
-                st.markdown(style_summary)
+                st.markdown("## 💡 Style Explanation")
+                st.markdown(explanation)
             
             with col2:
-                st.markdown("## 🖼️ Your Wardrobe Visualized")
+                st.markdown("## 🖼️ Your Personalized Wardrobe")
                 st.image(image_response.data[0].url, use_column_width=True)
-                st.caption("AI-generated based on your style preferences")
+                st.caption("AI-generated visualization of your recommended items")
 
         except Exception as e:
             st.error(f"Error generating wardrobe: {str(e)}")
