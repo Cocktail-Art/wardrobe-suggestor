@@ -1,116 +1,203 @@
-# style_vision.py
 import streamlit as st
 from openai import OpenAI
 import re
 from dotenv import load_dotenv
 import os
+from datetime import datetime
 
 # Load environment variables
 load_dotenv()
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 # Set up Streamlit page
-st.set_page_config(page_title="Style Personality & Vision Board", layout="wide")
-st.title("👗 Discover Your Style Personality")
-st.markdown("Complete this style questionnaire to receive your personalized capsule wardrobe and vision board")
+st.set_page_config(page_title="Style DNA Analyzer", layout="wide")
+st.title("👔 Discover Your Fashion Personality in 60 Seconds")
+st.markdown("### Answer these quick questions to unlock your personalized style blueprint")
 
-# Consolidated form with all sections
-with st.form("style_form"):
-    st.header("🛍️ Personal Style Profile")
+with st.form("style_dna"):
+    # Header
+    st.markdown("## Quick Personal Info")
     
-    # Section 1: Basic Info
-    st.subheader("Basic Information")
-    name = st.text_input("Full Name")
-    weight = st.number_input("Weight (kg)", min_value=30, max_value=200)
-    height = st.text_input("Height")
-    top_size = st.selectbox("Top Size", ["XS", "S", "M", "L", "XL", "XXL"])
-    bottom_size = st.text_input("Bottom Size (e.g., 28x32, M, 38)")
-    skin_tone = st.slider("Skin Tone (1 = Fair, 10 = Dark)", 1, 10, 5)
+    # Personal Information
+    col1, col2 = st.columns(2)
+    with col1:
+        name = st.text_input("Full Name*", placeholder="Required")
+        email = st.text_input("Email ID*")
+        phone = st.text_input("Whatsapp Number*")
+    with col2:
+        birthdate = st.date_input("Birthdate (Optional)", value=None)
+        weight = st.number_input("Weight (kg)*", min_value=30, max_value=200)
+        height = st.text_input("Height* (cm or ft)")
+    
+    # Body Basics
+    st.markdown("---")
+    st.markdown("#### Your Body Basics (Essential for perfect fit)")
+    body_col1, body_col2 = st.columns(2)
+    with body_col1:
+        shirt_size = st.selectbox("Shirt Size*", ["S", "M", "L", "XL", "XXL"])
+    with body_col2:
+        pant_size = st.text_input("Pant Size* (e.g., 34x32)")
 
-    # Section 2: Style Preferences
-    st.subheader("Style Preferences")
-    style_icons = st.multiselect("Which style icons inspire you?", [
-        "Classic Elegance", "Streetwear Vibes", "Boho Chic", 
-        "Minimalist", "Sporty", "Professional", "Artsy"
-    ])
-    color_palette = st.multiselect("Favorite color groups:", [
-        "Neutrals (black, white, beige)", "Earth tones", "Pastels",
-        "Jewel tones", "Bright colors", "Monochromatic"
-    ])
-    frustrations = st.multiselect("Biggest style challenges:", [
-        "Finding proper fits", "Mixing patterns/textures",
-        "Accessorizing", "Seasonal transitions",
-        "Budget-friendly options", "Body confidence"
-    ])
+    # Section 1: Dressing Challenges
+    with st.expander("Section 1: Dressing Challenges", expanded=True):
+        st.markdown("#### 1. What frustrates you most when dressing up? (Pick 2)")
+        frustrations = st.multiselect(
+            "Select up to 2:",
+            options=[
+                "Nothing fits me right", "I don't know what matches",
+                "My clothes are outdated", "I never have the right outfit",
+                "Shopping is overwhelming", "I want to look better, just don't know how"
+            ],
+            max_selections=2
+        )
 
-    # Section 3: Lifestyle Needs
-    st.subheader("Lifestyle Needs")
-    weekly_breakdown = st.multiselect("Weekly activities:", [
-        "Office work", "Gym/fitness", "Casual outings",
-        "Special events", "Creative work", "Parenting"
-    ])
-    comfort_level = st.slider("Comfort vs Style balance", 1, 5, 3, 
-                            help="1 = All comfort, 5 = All style")
+        st.markdown("#### 2. What kind of fit makes you feel most confident?")
+        fit_pref = st.radio(
+            "Select one:",
+            options=[
+                "Slim & tailored", "Relaxed & comfy",
+                "Structured but not tight", "I wear whatever I find"
+            ],
+            horizontal=True
+        )
 
-    # Single submit button
-    submitted = st.form_submit_button("✨ Generate My Style Plan")
+        st.markdown("#### 3. Preferred color groups? (Pick 2)")
+        color_groups = st.multiselect(
+            "Select up to 2:",
+            options=[
+                "Black, Grey, Navy", "White, Beige, Brown",
+                "Olive, Teal, Rust", "Brights like mustard/red",
+                "I avoid color — unsure what suits me"
+            ],
+            max_selections=2
+        )
+
+    # Section 2: Style Personality
+    with st.expander("Section 2: Style Expression", expanded=False):
+        st.markdown("#### 4. Which style icon inspires you most? (Pick 1-2)")
+        icons = st.multiselect(
+            "Select 1-2:",
+            options=[
+                "Shah Rukh in Pathaan (Rugged cool)",
+                "Steve Jobs (Minimal)",
+                "Virat Kohli (Sharp sporty)",
+                "Pankaj Tripathi (Earthy calm)",
+                "Ranveer Singh (Bold expressive)"
+            ],
+            max_selections=2
+        )
+
+        st.markdown("#### 5. Weekend outfit of choice?")
+        weekend_outfit = st.radio(
+            "Select one:",
+            options=[
+                "Tee + joggers", "Shirt + jeans",
+                "Kurta + pants", "Blazer + tee",
+                "Loose tee + slides"
+            ],
+            horizontal=True
+        )
+
+        st.markdown("#### 6. How do you feel about accessories?")
+        accessories = st.radio(
+            "Select one:",
+            options=[
+                "Love them — they finish a look",
+                "Stick to basics",
+                "Avoid them — too much hassle",
+                "Curious, open to learn"
+            ],
+            horizontal=True
+        )
+
+    # Section 3: Mindset
+    with st.expander("Section 3: Self Image & Mindset", expanded=False):
+        st.markdown("#### 7. 3-month wardrobe goal?")
+        wardrobe_goal = st.radio(
+            "Select one:",
+            options=[
+                "Look more polished for work",
+                "Rebuild with fewer, better pieces",
+                "Be comfy but presentable",
+                "Try a bold new look",
+                "Just reduce confusion"
+            ],
+            horizontal=True
+        )
+
+        st.markdown("#### 8. Current wardrobe vibe?")
+        wardrobe_vibe = st.radio(
+            "Select one:",
+            options=[
+                "Clean & functional", "Cool & laid-back",
+                "Sharp & versatile", "Random & messy",
+                "Doesn't reflect who I am"
+            ],
+            horizontal=True
+        )
+
+        st.markdown("#### 9. Style confidence level today?")
+        style_conf = st.slider(
+            "1 = Not confident, 5 = I own it",
+            1, 5, 3,
+            label_visibility="collapsed"
+        )
+
+    # Final submission
+    submitted = st.form_submit_button("🚀 Generate My Style DNA Report")
 
 if submitted:
-    # Build the style profile
-    style_profile = f"""
-    Style Profile for {name}:
-    - Body: {weight}kg, {height}, Top: {top_size}, Bottom: {bottom_size}
-    - Skin Tone: {skin_tone}/10
-    - Style Inspirations: {', '.join(style_icons)}
-    - Color Preferences: {', '.join(color_palette)}
-    - Challenges: {', '.join(frustrations)}
-    - Weekly Activities: {', '.join(weekly_breakdown)}
-    - Comfort/Style Balance: {comfort_level}/5
+    # Calculate zodiac sign if birthdate provided
+    zodiac = ""
+    if birthdate:
+        month = birthdate.month
+        day = birthdate.day
+        # Add zodiac calculation logic here
+
+    # Build analysis prompt
+    analysis_prompt = f"""Analyze this style profile:
+    Name: {name}
+    Body: {weight}kg, {height}, {shirt_size} top, {pant_size} bottom
+    Frustrations: {', '.join(frustrations)}
+    Fit Preference: {fit_pref}
+    Colors: {', '.join(color_groups)}
+    Style Icons: {', '.join(icons)}
+    Weekend Style: {weekend_outfit}
+    Accessory Approach: {accessories}
+    Wardrobe Goal: {wardrobe_goal}
+    Current Vibe: {wardrobe_vibe}
+    Confidence: {style_conf}/5
+    Zodiac: {zodiac if zodiac else 'Not provided'}
+
+    Create:
+    1. Style persona name
+    2. 3 key style strengths
+    3. 3 improvement areas
+    4. 8-item capsule wardrobe (specific colors/materials)
+    5. DALL-E 3 prompt for flat lay image (no humans, labeled items)
     """
 
-    # Enhanced GPT prompt
-    gpt_prompt = f"""Act as a professional fashion stylist. Create a capsule wardrobe based on these requirements:
-    
-    {style_profile}
-    
-    Your response MUST include:
-    1. 8-10 specific clothing items (include colors/materials)
-    2. 4-5 footwear options 
-    3. 3-5 accessory recommendations
-    4. Style guidelines for mixing items
-    5. A DALL-E 3 prompt for a flat lay image of these items
-    
-    Image requirements:
-    - No human models or body parts
-    - Show individual clothing items arranged artistically
-    - Neutral background
-    - Consistent lighting
-    - Include text labels for key pieces
-    """
-
-    # Generate wardrobe suggestions
-    with st.spinner("Creating your perfect wardrobe..."):
+    # Generate analysis
+    with st.spinner("🔍 Decoding your style DNA..."):
         try:
-            # Get text response
-            completion = client.chat.completions.create(
+            # GPT-4 Analysis
+            response = client.chat.completions.create(
                 model="gpt-4",
                 messages=[
-                    {"role": "system", "content": "You are a fashion expert specializing in capsule wardrobes."},
-                    {"role": "user", "content": gpt_prompt}
+                    {"role": "system", "content": "You are a fashion analyst specializing in personalized style profiles."},
+                    {"role": "user", "content": analysis_prompt}
                 ],
-                temperature=0.6,
+                temperature=0.7,
                 max_tokens=1500
             )
-            response_text = completion.choices[0].message.content
-            
+            analysis = response.choices[0].message.content
+
             # Extract DALL-E prompt
-            dalle_prompt = re.search(r"DALL-E 3 prompt:(.*?)(?=\n\d+\.|$)", response_text, re.DOTALL)
+            dalle_prompt = re.search(r"DALL-E 3 prompt:(.*?)(?=\n\d+\.|$)", analysis, re.DOTALL)
             if dalle_prompt:
                 dalle_prompt = dalle_prompt.group(1).strip()
-            else:  # Fallback prompt
-                dalle_prompt = f"Professional flat lay photography of a gender-neutral capsule wardrobe containing {len(style_icons)*2} items, "\
-                            f"including {', '.join(color_palette[:2])} colors. Items neatly arranged on neutral background, "\
-                            "soft lighting, minimalist composition, high detail, textile textures visible, no human models."
+            else:
+                dalle_prompt = f"Professional flat lay of {name}'s capsule wardrobe containing 8 items: {color_groups[0]} and {color_groups[1]} colors. Include labels, textile textures, no humans. Minimalist white background."
 
             # Generate wardrobe image
             image_response = client.images.generate(
@@ -118,15 +205,25 @@ if submitted:
                 prompt=dalle_prompt,
                 size="1024x1024",
                 quality="hd",
-                n=1
+                style="natural"
             )
 
             # Display results
-            st.subheader("🧳 Your Capsule Wardrobe")
-            st.markdown(response_text.split("DALL-E 3 prompt:")[0])
-
-            st.subheader("🎨 Visual Wardrobe Guide")
-            st.image(image_response.data[0].url, caption="Your Personalized Capsule Wardrobe", use_column_width=True)
+            st.success(f"🎉 Success! Here's {name}'s Style DNA Report")
             
+            col1, col2 = st.columns([2, 3])
+            with col1:
+                st.markdown("## 📝 Style Breakdown")
+                st.markdown(analysis.split("DALL-E 3 prompt:")[0])
+            
+            with col2:
+                st.markdown("## 🖼️ Vision Board Preview")
+                st.image(image_response.data[0].url, use_column_width=True)
+                st.caption("✨ AI-Generated Capsule Wardrobe Visualization")
+
         except Exception as e:
-            st.error(f"Error generating wardrobe: {str(e)}")
+            st.error(f"Error generating report: {str(e)}")
+
+# Add footer
+st.markdown("---")
+st.caption("Style DNA Analyzer v1.0 | Your personal fashion assistant")
