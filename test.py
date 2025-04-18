@@ -10,133 +10,123 @@ load_dotenv()
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 # Set up Streamlit page
-st.set_page_config(page_title="Personal Style Architect", layout="wide")
-st.title("👗🧥 Personal Style Architect")
-st.markdown("Complete this style profile to receive your custom capsule wardrobe and visual collection")
+st.set_page_config(page_title="Style Personality & Vision Board", layout="wide")
+st.title("👗 Discover Your Style Personality")
+st.markdown("Complete this style questionnaire to receive your personalized capsule wardrobe and vision board")
 
-# Single form for all sections
+# Consolidated form with all sections
 with st.form("style_form"):
-    col1, col2 = st.columns(2)
+    st.header("🛍️ Personal Style Profile")
     
-    with col1:
-        st.header("🔑 Basic Information")
-        name = st.text_input("Full Name")
-        age = st.slider("Age", 18, 80, 25)
-        gender = st.selectbox("Gender Identity", ["Female", "Male", "Non-binary", "Prefer not to say"])
-        body_type = st.selectbox("Body Type", [
-            "Hourglass", "Pear", "Apple", "Rectangle", "Inverted triangle", "No preference"
-        ])
-        sizes = st.columns(2)
-        with sizes[0]:
-            top_size = st.selectbox("Top Size", ["XS", "S", "M", "L", "XL"])
-        with sizes[1]:
-            bottom_size = st.text_input("Bottom Size (e.g., 28/30)")
-        
-    with col2:
-        st.header("🎨 Style Preferences")
-        color_palette = st.multiselect("Favorite Color Palette", [
-            "Neutrals (black, white, beige)",
-            "Earth tones (olive, rust, brown)",
-            "Jewel tones (emerald, sapphire, ruby)",
-            "Pastels (lavender, mint, blush)",
-            "Brights (neon, primary colors)"
-        ])
-        style_inspiration = st.multiselect("Style Inspiration", [
-            "Minimalist", "Bohemian", "Streetwear", "Business Casual",
-            "Athleisure", "Romantic", "Edgy", "Vintage"
-        ])
-        avoids = st.text_area("What clothing items/materials do you avoid?")
+    # Section 1: Basic Info
+    st.subheader("Basic Information")
+    name = st.text_input("Full Name")
+    weight = st.number_input("Weight (kg)", min_value=30, max_value=200)
+    height = st.text_input("Height")
+    top_size = st.selectbox("Top Size", ["XS", "S", "M", "L", "XL", "XXL"])
+    bottom_size = st.text_input("Bottom Size (e.g., 28x32, M, 38)")
+    skin_tone = st.slider("Skin Tone (1 = Fair, 10 = Dark)", 1, 10, 5)
 
-    st.header("💡 Wardrobe Goals")
-    lifestyle = st.multiselect("Weekly Activities (select all that apply)", [
-        "Office work", "Creative work", "Parenting", "Fitness", 
-        "Social events", "Outdoor activities", "Casual hangouts"
+    # Section 2: Style Preferences
+    st.subheader("Style Preferences")
+    style_icons = st.multiselect("Which style icons inspire you?", [
+        "Classic Elegance", "Streetwear Vibes", "Boho Chic", 
+        "Minimalist", "Sporty", "Professional", "Artsy"
     ])
-    investment = st.slider("Budget for new pieces (per month)", 50, 1000, 200)
-    
+    color_palette = st.multiselect("Favorite color groups:", [
+        "Neutrals (black, white, beige)", "Earth tones", "Pastels",
+        "Jewel tones", "Bright colors", "Monochromatic"
+    ])
+    frustrations = st.multiselect("Biggest style challenges:", [
+        "Finding proper fits", "Mixing patterns/textures",
+        "Accessorizing", "Seasonal transitions",
+        "Budget-friendly options", "Body confidence"
+    ])
+
+    # Section 3: Lifestyle Needs
+    st.subheader("Lifestyle Needs")
+    weekly_breakdown = st.multiselect("Weekly activities:", [
+        "Office work", "Gym/fitness", "Casual outings",
+        "Special events", "Creative work", "Parenting"
+    ])
+    comfort_level = st.slider("Comfort vs Style balance", 1, 5, 3, 
+                            help="1 = All comfort, 5 = All style")
+
     # Single submit button
-    submitted = st.form_submit_button("🚀 Generate My Style Plan")
+    submitted = st.form_submit_button("✨ Generate My Style Plan")
 
-# Processing
 if submitted:
+    # Build the style profile
     style_profile = f"""
-    Gender Identity: {gender}
-    Age: {age}
-    Body Type: {body_type}
-    Sizes: Top {top_size}, Bottom {bottom_size}
-    Color Preferences: {', '.join(color_palette)}
-    Style Inspiration: {', '.join(style_inspiration)}
-    Avoids: {avoids}
-    Lifestyle Needs: {', '.join(lifestyle)}
-    Monthly Budget: ${investment}
+    Style Profile for {name}:
+    - Body: {weight}kg, {height}, Top: {top_size}, Bottom: {bottom_size}
+    - Skin Tone: {skin_tone}/10
+    - Style Inspirations: {', '.join(style_icons)}
+    - Color Preferences: {', '.join(color_palette)}
+    - Challenges: {', '.join(frustrations)}
+    - Weekly Activities: {', '.join(weekly_breakdown)}
+    - Comfort/Style Balance: {comfort_level}/5
     """
 
-    wardrobe_prompt = f"""
-    Act as a professional stylist creating a seasonless capsule wardrobe. Client profile:
-
-    {style_profile}
-
-    Create a wardrobe plan that includes:
-    1. 8-10 tops (specify types and color/material)
-    2. 5-6 bottoms (specify styles)
-    3. 3-4 outerwear pieces
-    4. 4-5 footwear options
-    5. Accessories recommendation
-    6. Key wardrobe rules for mixing pieces
+    # Enhanced GPT prompt
+    gpt_prompt = f"""Act as a professional fashion stylist. Create a capsule wardrobe based on these requirements:
     
-    For DALL-E image:
-    - List specific clothing items from the wardrobe
-    - Create an image prompt showing these items arranged aesthetically
-    - NO human figures - show only clothing
-    - Specify exact colors from the palette
+    {style_profile}
+    
+    Your response MUST include:
+    1. 8-10 specific clothing items (include colors/materials)
+    2. 4-5 footwear options 
+    3. 3-5 accessory recommendations
+    4. Style guidelines for mixing items
+    5. A DALL-E 3 prompt for a flat lay image of these items
+    
+    Image requirements:
+    - No human models or body parts
+    - Show individual clothing items arranged artistically
+    - Neutral background
+    - Consistent lighting
+    - Include text labels for key pieces
     """
 
-    with st.spinner("Designing your perfect wardrobe..."):
-        # Get wardrobe recommendations
-        chat_response = client.chat.completions.create(
-            model="gpt-4-turbo",
-            messages=[
-                {"role": "system", "content": "You are a knowledgeable fashion stylist specializing in capsule wardrobes."},
-                {"role": "user", "content": wardrobe_prompt}
-            ],
-            temperature=0.6,
-            max_tokens=1500
-        )
-        wardrobe_plan = chat_response.choices[0].message.content
-        st.subheader("✨ Your Capsule Wardrobe")
-        st.markdown(wardrobe_plan)
+    # Generate wardrobe suggestions
+    with st.spinner("Creating your perfect wardrobe..."):
+        try:
+            # Get text response
+            completion = client.chat.completions.create(
+                model="gpt-4",
+                messages=[
+                    {"role": "system", "content": "You are a fashion expert specializing in capsule wardrobes."},
+                    {"role": "user", "content": gpt_prompt}
+                ],
+                temperature=0.6,
+                max_tokens=1500
+            )
+            response_text = completion.choices[0].message.content
+            
+            # Extract DALL-E prompt
+            dalle_prompt = re.search(r"DALL-E 3 prompt:(.*?)(?=\n\d+\.|$)", response_text, re.DOTALL)
+            if dalle_prompt:
+                dalle_prompt = dalle_prompt.group(1).strip()
+            else:  # Fallback prompt
+                dalle_prompt = f"Professional flat lay photography of a gender-neutral capsule wardrobe containing {len(style_icons)*2} items, "\
+                            f"including {', '.join(color_palette[:2])} colors. Items neatly arranged on neutral background, "\
+                            "soft lighting, minimalist composition, high detail, textile textures visible, no human models."
 
-        # Extract clothing items for image generation
-        items_pattern = r"\d+\.\s(.*?)\s-\s(.*?)(?=\n\d+\.|$)"
-        clothing_items = re.findall(items_pattern, wardrobe_plan)
-        flat_items = [f"{type}: {desc}" for _, (type, desc) in enumerate(clothing_items[:10])]
+            # Generate wardrobe image
+            image_response = client.images.generate(
+                model="dall-e-3",
+                prompt=dalle_prompt,
+                size="1024x1024",
+                quality="hd",
+                n=1
+            )
 
-        # Generate image prompt
-        image_prompt = f"""
-        Professional flat lay of a gender-neutral capsule wardrobe collection showing:
-        {', '.join(flat_items[:8]) if flat_items else 'Various clothing items'} 
-        arranged artistically on a neutral background. 
-        Colors: {', '.join(color_palette) if color_palette else 'neutral palette'}.
-        Editorial product photography style, clean lines, perfect lighting, 
-        minimalist composition. No human figures or models.
-        """
+            # Display results
+            st.subheader("🧳 Your Capsule Wardrobe")
+            st.markdown(response_text.split("DALL-E 3 prompt:")[0])
 
-        # Generate vision board
-        st.subheader("🖼️ Digital Closet Preview")
-        with st.spinner("Creating your visual collection..."):
-            try:
-                image_response = client.images.generate(
-                    model="dall-e-3",
-                    prompt=image_prompt,
-                    size="1024x1024",
-                    quality="hd",
-                    style="natural",
-                    n=1
-                )
-                image_url = image_response.data[0].url
-                st.image(image_url, use_column_width=True)
-                st.markdown(f"**Image Prompt:** `{image_prompt}`")
-                
-            except Exception as e:
-                st.error(f"Error generating image: {str(e)}")
-                st.markdown(f"**Failed Image Prompt:** {image_prompt}")
+            st.subheader("🎨 Visual Wardrobe Guide")
+            st.image(image_response.data[0].url, caption="Your Personalized Capsule Wardrobe", use_column_width=True)
+            
+        except Exception as e:
+            st.error(f"Error generating wardrobe: {str(e)}")
