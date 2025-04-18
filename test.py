@@ -43,7 +43,106 @@ with st.form("style_dna"):
     st.markdown("---")
     st.markdown("**Style Preferences**")
     
-    # [Keep all the style questions exactly as before...]
+    # Question 1
+    frustrations = st.multiselect(
+        "1. What frustrates you most when dressing up? (Pick 2)",
+        options=[
+            "Nothing fits me right", "I don't know what matches",
+            "My clothes are outdated", "I never have the right outfit",
+            "Shopping is overwhelming", "I want to look better, just don't know how"
+        ],
+        max_selections=2
+    )
+
+    # Question 2
+    fit_pref = st.radio(
+        "2. What kind of fit makes you feel most confident?",
+        options=[
+            "Slim & tailored", "Relaxed & comfy",
+            "Structured but not tight", "I wear whatever I find"
+        ],
+        horizontal=True
+    )
+
+    # Question 3
+    color_groups = st.multiselect(
+        "3. Preferred color groups? (Pick 2)",
+        options=[
+            "Black, Grey, Navy", "White, Beige, Brown",
+            "Olive, Teal, Rust", "Brights like mustard/red",
+            "I avoid color — unsure what suits me"
+        ],
+        max_selections=2
+    )
+
+    # Question 4
+    icons = st.multiselect(
+        "4. Which style icon inspires you most? (Pick 1-2)",
+        options=[
+            "Shah Rukh (Rugged cool)",
+            "Steve Jobs (Minimal)",
+            "Virat Kohli (Sharp sporty)",
+            "Pankaj Tripathi (Earthy calm)",
+            "Ranveer Singh (Bold expressive)"
+        ],
+        max_selections=2
+    )
+
+    # Question 5
+    weekend_outfit = st.radio(
+        "5. Weekend outfit of choice?",
+        options=[
+            "Tee + joggers", "Shirt + jeans",
+            "Kurta + pants", "Blazer + tee",
+            "Loose tee + slides"
+        ],
+        horizontal=True
+    )
+
+    # Question 6
+    accessories = st.radio(
+        "6. How do you feel about accessories?",
+        options=[
+            "Love them — they finish a look",
+            "Stick to basics",
+            "Avoid them — too much hassle",
+            "Curious, open to learn"
+        ],
+        horizontal=True
+    )
+
+    # Question 7
+    wardrobe_goal = st.radio(
+        "7. 3-month wardrobe goal?",
+        options=[
+            "Look more polished for work",
+            "Rebuild with fewer, better pieces",
+            "Be comfy but presentable",
+            "Try a bold new look",
+            "Just reduce confusion"
+        ],
+        horizontal=True
+    )
+
+    # Question 8
+    wardrobe_vibe = st.radio(
+        "8. Current wardrobe vibe?",
+        options=[
+            "Clean & functional", "Cool & laid-back",
+            "Sharp & versatile", "Random & messy",
+            "Doesn't reflect who I am"
+        ],
+        horizontal=True
+    )
+
+    # Question 9
+    style_conf = st.slider(
+        "9. Style confidence level today? (1 = Not confident, 5 = I own it)",
+        1, 5, 3
+    )
+
+    # Submit button
+    submitted = st.form_submit_button("🚀 Generate My Style DNA Report")
 
 if submitted:
     # Validate required fields
@@ -71,12 +170,14 @@ if submitted:
     Current Vibe: {wardrobe_vibe}
     Confidence: {style_conf}/5
 
-    Create:
-    1. {gender}-specific style persona name
+    Create for {gender.lower()} wardrobe:
+    1. Style persona name
     2. 3 key style strengths
     3. 3 improvement areas
-    4. 8-item {gender.lower()} capsule wardrobe (specific colors/materials)
-    5. DALL-E 3 prompt for {gender.lower()} fashion flat lay (12 items, no humans, labeled items)
+    4. 8 specific clothing items with colors/materials
+    5. Footwear recommendations
+    6. Accessory suggestions
+    7. DALL-E 3 prompt for flat lay image (12 items, no humans, labeled items)
     """
 
     # Generate analysis
@@ -86,7 +187,7 @@ if submitted:
             response = client.chat.completions.create(
                 model="gpt-4",
                 messages=[
-                    {"role": "system", "content": f"You are a {gender.lower()} fashion expert creating detailed style reports."},
+                    {"role": "system", "content": f"You are a {gender.lower()} fashion expert specializing in capsule wardrobes."},
                     {"role": "user", "content": analysis_prompt}
                 ],
                 temperature=0.7,
@@ -100,9 +201,9 @@ if submitted:
                 dalle_prompt = dalle_match.group(1).strip()
             else:
                 if gender == "Male":
-                    dalle_prompt = f"Professional flat lay of 12 {gender.lower()} fashion items: shirts, trousers, jackets, shoes. {color_description} colors. Clean white background, items neatly arranged with labels, no humans. ALL FOR MEN."
+                    dalle_prompt = f"Professional product photography of 12 male fashion items arranged in 3x4 grid: shirts, trousers, jackets, shoes in {color_description} colors. Clean white background, each item clearly visible with small label, no human models, masculine aesthetic."
                 else:
-                    dalle_prompt = f"Professional flat lay of 12 {gender.lower()} fashion items: blouses, skirts, dresses, shoes. {color_description} colors. Clean white background, items neatly arranged with labels, no humans, feminine style."
+                    dalle_prompt = f"Professional product photography of 12 female fashion items arranged in 3x4 grid: tops, skirts, dresses, shoes in {color_description} colors. Clean white background, each item clearly visible with small label, no human models, feminine aesthetic."
 
             # Generate wardrobe image
             image_response = client.images.generate(
@@ -119,7 +220,7 @@ if submitted:
             col1, col2 = st.columns([2, 3])
             with col1:
                 st.markdown("## 📝 Style Breakdown")
-                # st.markdown(analysis.split("DALL-E 3 prompt:")[0])
+                st.markdown(analysis.split("DALL-E 3 prompt:")[0])
             
             with col2:
                 st.markdown(f"## 🖼️ {gender} Wardrobe Preview")
