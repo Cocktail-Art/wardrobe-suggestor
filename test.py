@@ -1,12 +1,12 @@
 import streamlit as st
-import openai
+from openai import OpenAI  # Updated import
 import re
 from dotenv import load_dotenv
 import os
 
 # Load environment variables
 load_dotenv()
-openai.api_key = os.getenv("OPENAI_API_KEY")
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))  # New client initialization
 
 # Set up Streamlit page
 st.set_page_config(page_title="Style Personality & Vision Board", layout="wide")
@@ -105,7 +105,7 @@ if final_submit:
 
     st.subheader("🎯 Style Breakdown")
     with st.spinner("Creating your wardrobe..."):
-        response = openai.ChatCompletion.create(
+        response = client.chat.completions.create(  # Updated API call
             model="gpt-3.5-turbo",
             messages=[
                 {"role": "system", "content": "You are a helpful fashion stylist."},
@@ -115,7 +115,7 @@ if final_submit:
             max_tokens=1000
         )
 
-        content = response['choices'][0]['message']['content']
+        content = response.choices[0].message.content  # Updated response access
         st.markdown(content)
 
         image_prompt_match = re.search(r'(?i)image generation prompt.*?:\s*(.+)', content)
@@ -127,11 +127,11 @@ if final_submit:
 
     st.subheader("🖼️ Vision Board Preview")
     with st.spinner("Generating your visual..."):
-        image_response = openai.Image.create(
+        image_response = client.images.generate(  # Updated API call
             prompt=image_prompt,
             n=1,
             size="1024x1024"
         )
-        image_url = image_response['data'][0]['url']
+        image_url = image_response.data[0].url  # Updated response access
         st.image(image_url, caption="Your Style Vision Board", use_column_width=True)
         st.markdown(f"[🔗 View Full Image]({image_url})")
